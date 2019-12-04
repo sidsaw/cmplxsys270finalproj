@@ -1,5 +1,3 @@
-;; setup
-
 breed [mussels mussel]
 breed [basses bass]
 basses-own [direction]
@@ -9,7 +7,7 @@ mussels-own [ age ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [attach-rate mussel-repr-age mussel-death-rate mussel-birth-rate mussel-egg-count larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount]
+globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount]
 
 to setup
   set attach-rate -1
@@ -34,10 +32,22 @@ to setup
 end
 
 
+to go-once
+  mussel-birth
+  mussel-death
+  larvae-detach
+  bass-move
+  if ticks = 520 [
+     bass-restock
+  ]
+end
+
+
 to mussel-birth
   ;; mussels only give birth once a year, so ticks mod 26 == 0 is necessary
   if ticks mod (52 / tick-weeks) = 0 [
     ask mussels [
+      set age age + 1
       ;; mussels must be of reproductive age to give birth
       if age >= mussel-repr-age [
         ;; mussel-birth-rate is the part of the population that reproduces each year
@@ -79,28 +89,22 @@ to larvae-detach
   ]
 end
 
-
-
 to bass-move
   let dist 3
-  if not can-move? dist [ rt 180 ]
-  let num direction * dist
-  let next-patch-list [self] of (patch-set patch-at -1 num patch-at 0 num patch-at 1 num)
-  let valid-next-patch-list []
-  foreach next-patch-list [ [current-patch] ->
-    ;; if it's part of the river, add it to the end of the list of valid patches
-    if pcolor = river-color [
-      set valid-next-patch-list lput current-patch valid-next-patch-list
+  if not can-move? dist [
+    	ask basses  [
+      rt 180
+      set direction -1 * direction
+      face one-of patches with [pcolor = red]
+      fd 3
+      Ask out-link-neighbors [
+        setxy ([xcor] of myself) ([ycor] of myself)
+      ]
     ]
   ]
-
   ;; need to add moving of links
-  move-to one-of valid-next-patch-list
-  Ask out-link-neighbors [
-    move-to one-of valid-next-patch-list
-  ]
-
 end
+
 
 to bass-restock
    ask patch-at bass-restock-x bass-restock-y [
