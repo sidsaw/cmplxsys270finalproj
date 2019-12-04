@@ -9,15 +9,7 @@ mussels-own [ age ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [attach-rate
-         mussel-repr-age
-         mussel-death-rate
-         mussel-birth-rate
-         larvae-death-rate
-         river-color
-         tick-weeks
-         mussel-egg-count
-         mussel-detach-age]
+globals [attach-rate mussel-repr-age mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age mussel-egg-count]
 
 to setup
   set attach-rate -1
@@ -32,6 +24,7 @@ to setup
   create-mussels 100 [
     move-to one-of patches with [ pcolor = green ]
     set age random-normal 35 17.5
+
   ]
 
   create-basses 20 [
@@ -59,6 +52,7 @@ to mussel-birth
   ]
 end
 
+;; mussel-death
 to mussel-death
   set mussel-death-rate 0.2
   ;; loop through all mussel ages
@@ -88,29 +82,31 @@ end
 
 
 to bass-move
-  ;;let dist 3 ;; distance bass move each tick
-  ;;if not can-move? dist [ rt 180 ]
-
-  ;;let next-patch-list patches-at[[-1 direction*dist] [0 direction*dist] [1 direction*dist]]
-  ;;let valid-next-patch-list []
-  ;;foreach next-patch-list [ [current-patch] ->
-    ;;;; if it's part of the river, add it to the end of the list of valid patches
-    ;;if pcolor = river-color [
-      ;;set valid-next-patch-list lput current-patch valid-next-patch-list
-    ;;]
-  ;;]
+  let dist 3
+  if not can-move? dist [ rt 180 ]
+  let num direction * dist
+  let next-patch-list [self] of (patch-set patch-at -1 num patch-at 0 num patch-at 1 num)
+  let valid-next-patch-list []
+  foreach next-patch-list [ [current-patch] ->
+    ;; if it's part of the river, add it to the end of the list of valid patches
+    if pcolor = river-color [
+      set valid-next-patch-list lput current-patch valid-next-patch-list
+    ]
+  ]
 
   ;; need to add moving of links
-  ;;move-to one-of valid-next-patch-list
+  move-to one-of valid-next-patch-list
+  Ask out-link-neighbors [
+    move-to one-of valid-next-patch-list
+  ]
 
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
-10
+11
 647
-448
+449
 -1
 -1
 13.0
@@ -132,6 +128,23 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+BUTTON
+38
+72
+104
+105
+NIL
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
