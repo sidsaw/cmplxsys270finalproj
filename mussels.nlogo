@@ -9,7 +9,7 @@ mussels-own [ age ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [attach-rate mussel-repr-age mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age mussel-egg-count]
+globals [attach-rate mussel-repr-age mussel-death-rate mussel-birth-rate mussel-egg-count larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount]
 
 to setup
   set attach-rate -1
@@ -100,6 +100,21 @@ to bass-move
     move-to one-of valid-next-patch-list
   ]
 
+end
+
+to bass-restock
+   ask patch-at bass-restock-x bass-restock-y [
+      ;; sprout basses on the desired patch
+      sprout-basses bass-restock-amount [
+         ;; commands for new bass
+         ifelse random-float 1 < 0.5 [
+            set direction -1
+         ]
+         [
+            set direction 1
+         ]
+      ]
+   ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
