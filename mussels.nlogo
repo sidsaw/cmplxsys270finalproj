@@ -11,6 +11,7 @@ globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-b
 
 to setup
   clear-all
+  reset-ticks
   import-pcolors "river1_dots.jpg"
   set attach-rate -1
   set mussel-repr-age 5
@@ -41,9 +42,11 @@ to go-once
   mussel-birth
   mussel-death
   larvae-detach
-  bass-move
+  ask basses [
+    bass-move
+  ]
   if ticks = 520 [
-     bass-restock
+     ;;bass-restock
   ]
 end
 
@@ -97,15 +100,13 @@ end
 to bass-move
   let dist 3
   if not can-move? dist [
-    	ask basses  [
       rt 180
       set direction -1 * direction
-      face one-of patches with [pcolor = red]
-      fd 3
-      Ask out-link-neighbors [
-        setxy ([xcor] of myself) ([ycor] of myself)
-      ]
-    ]
+  ]
+  face one-of patches with [pcolor = red]
+  fd 3
+  ask out-link-neighbors [
+    setxy ([xcor] of myself) ([ycor] of myself)
   ]
   ;; need to add moving of links
 end
@@ -160,6 +161,23 @@ BUTTON
 105
 NIL
 setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+75
+147
+160
+180
+NIL
+go-once
 NIL
 1
 T
