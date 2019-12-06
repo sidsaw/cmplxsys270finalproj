@@ -10,6 +10,7 @@ undirected-link-breed [parasites parasite]
 globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount]
 
 to setup
+  import-pcolors "river1_dots.jpg"
   set attach-rate -1
   set mussel-repr-age 5
   set mussel-death-rate 0.2
@@ -20,7 +21,7 @@ to setup
   set tick-weeks 2
 
   create-mussels 100 [
-    move-to one-of patches with [ pcolor = green ]
+    move-to one-of patches with [ pcolor = 94.9 ]
     set age random-normal 35 17.5
 
   ]
