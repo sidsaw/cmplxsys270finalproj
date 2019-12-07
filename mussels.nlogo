@@ -1,13 +1,13 @@
 breed [mussels mussel]
 breed [basses bass]
-basses-own [direction]
+basses-own [direction top-color bottom-color]
 mussels-own [ age ]
 
 
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount]
+globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount top-colors bottom-colors]
 
 to setup
   clear-all
@@ -21,6 +21,9 @@ to setup
   set river-color 0
   set mussel-egg-count 50
   set tick-weeks 2
+  set top-colors [] ;; add colors of top
+  set bottom-colors [] ;; add colors of bottom
+
 
   create-mussels 100 [
     move-to one-of patches with [ pcolor = 94.9 ]
@@ -33,6 +36,9 @@ to setup
     set direction -1
     move-to one-of patches with [ pcolor = 94.9 ]
     set color red
+    ;; set top-color and bottom-color
+    set top-color one-of top-colors
+    set bottom-color one-of bottom-colors
   ]
 
 end
@@ -42,12 +48,11 @@ to go-once
   mussel-birth
   mussel-death
   larvae-detach
-  ask basses [
-    bass-move
-  ]
+  bass-move
   if ticks = 520 [
      ;;bass-restock
   ]
+  tick
 end
 
 
@@ -98,17 +103,23 @@ to larvae-detach
 end
 
 to bass-move
-  let dist 3
-  if not can-move? dist [
-      rt 180
-      set direction -1 * direction
+  ask basses [
+    let dist 3
+    let bottom bottom-color
+    let top top-color
+    if pcolor = top [
+      face one-of patches with [pcolor = bottom]
+    ]
+
+    if pcolor = bottom [
+      face one-of patches with [pcolor = top]
+    ]
+
+    fd 3
+    ask out-link-neighbors [
+      setxy ([xcor] of myself) ([ycor] of myself)
+    ]
   ]
-  face one-of patches with [pcolor = red]
-  fd 3
-  ask out-link-neighbors [
-    setxy ([xcor] of myself) ([ycor] of myself)
-  ]
-  ;; need to add moving of links
 end
 
 
@@ -130,8 +141,8 @@ end
 GRAPHICS-WINDOW
 210
 11
-647
-449
+1245
+1047
 -1
 -1
 13.0
@@ -144,10 +155,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-39
+39
+-39
+39
 0
 0
 1
