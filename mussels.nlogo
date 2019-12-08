@@ -7,17 +7,15 @@ mussels-own [ age ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate larvae-death-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount top-colors bottom-colors]
+globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount top-colors bottom-colors]
 
 to setup
   clear-all
   reset-ticks
   import-pcolors "newriverbranch.jpg"
-  set attach-rate -1
   set mussel-repr-age 5
   set mussel-death-rate 0.2
   set mussel-birth-rate 0.61
-  set larvae-death-rate -1
   set river-color 0
   set mussel-egg-count 50
   set tick-weeks 2
@@ -26,14 +24,14 @@ to setup
   set top-colors [114.6]
   set bottom-colors [14.2 125.4 64.9 25.9 84.9]
 
-  create-mussels 100 [
+  create-mussels initial-mussel-pop [
     move-to one-of patches with [ pcolor = 94.5 ]
     set age random-normal 35 17.5
     set color black
 
   ]
 
-  create-basses 20 [
+  create-basses initial-bass-pop [
     move-to one-of patches with [ pcolor = 94.5 ] ; basses start on water
     set color red
     ;; set top-color and bottom-color
@@ -45,7 +43,14 @@ to setup
     set bottom-color [pcolor] of target-bottom
     let bot-tmp [pcolor] of target-bottom
 
-    let target-patch min-one-of (patches with [pcolor = bot-tmp or pcolor = top-tmp]) [distance myself]
+    let target-patch one-of patches
+    ifelse random-float 1 < 0.5 [
+      set target-patch min-one-of (patches with [pcolor = bot-tmp]) [distance myself]
+    ]
+    [
+      set target-patch min-one-of (patches with [pcolor = top-tmp]) [distance myself]
+    ]
+
     let dir [pcolor] of target-patch
     set direction dir
     face one-of patches with [pcolor = dir]
@@ -55,14 +60,15 @@ end
 
 
 to go-once
+  tick
   mussel-birth
   mussel-death
   larvae-detach
   bass-move
+  mussel-bass-collide
   if ticks = 520 [
-     ;;bass-restock
+     bass-restock
   ]
-  tick
 end
 
 to go
@@ -91,25 +97,22 @@ end
 
 ;; mussel-death
 to mussel-death
-  set mussel-death-rate 0.2
-  ;; loop through all mussel ages
-  ask mussels [
-    let rnum random-float 1
-    if rnum < mussel-death-rate
-    [ die ]
+  ;; mussels have a chance of giving birth once a year, and also have a chance of dying once a year
+  if ticks mod (52 / tick-weeks) = 0 [
+    set mussel-death-rate 0.2
+    ;; loop through all mussel ages
+    ask mussels [
+      let rnum random-float 1
+      if rnum < mussel-death-rate
+      [ die ]
+    ]
   ]
 end
 
 to larvae-detach
-  ;; TODO change mussel-detach-age
-  set mussel-detach-age 5
   ask basses [
-    ;; check outlink neighbors of a bass
-    ask out-link-neighbors [
-      if age > mussel-detach-age
-      [
-        ;; delete link
-        ;; assumption is that bass move with mussels that have parasitic links
+    ask out-parasite-neighbors [
+      if random-float 1.0 <= 0.3 [
         ask my-in-parasites [ die ]
       ]
     ]
@@ -124,22 +127,18 @@ to bass-move
 
     ;; check if at top or bottom of map, switch direction if so
     if any? neighbors with [member? pcolor top-colors] or pcolor = top [
-      face one-of patches with [pcolor = bottom]
-      set direction bottom
-      set dir direction
+      let target-patch one-of (patches with [member? pcolor bottom-colors])
+      set bottom-color [pcolor] of target-patch
+      set direction [pcolor] of target-patch
+      face target-patch
     ]
 
     if any? neighbors with [member? pcolor bottom-colors] or pcolor = bottom [
-      face one-of patches with [pcolor = top]
-      set direction top
-      set dir direction
+      let target-patch one-of (patches with [member? pcolor top-colors])
+      set top-color [pcolor] of target-patch
+      set direction [pcolor] of target-patch
+      face target-patch
     ]
-
-    ;; move three
-    ;;let targ-patches patches with [pcolor = 94.5 and distance myself = 3]
-    ;;let targ-color-patch one-of patches with [pcolor = dir]
-    ;;let move-to-patch min-one-of targ-patches [distance targ-color-patch]
-    ;;move-to move-to-patch
 
     fd 3
 
@@ -148,6 +147,7 @@ to bass-move
       ifelse member? dir top-colors [
         ;; if heading upwards
         let target-patch min-one-of (patches with [member? pcolor top-colors]) [distance myself]
+        ;;let target-patch one-of (patches with [member? pcolor top-colors])
         set top-color [pcolor] of target-patch
         set direction [pcolor] of target-patch
         face target-patch
@@ -155,6 +155,7 @@ to bass-move
       [
         ;; if heading downwards
         let target-patch min-one-of (patches with [member? pcolor bottom-colors]) [distance myself]
+        ;;let target-patch one-of (patches with [member? pcolor bottom-colors])
         set bottom-color [pcolor] of target-patch
         set direction [pcolor] of target-patch
         face target-patch
@@ -168,19 +169,49 @@ to bass-move
   ]
 end
 
+to mussel-bass-collide
+  ask mussels [
+    let kids out-offspring-neighbors
+    if age > 4 [
+      ask basses in-radius 3 [
+        ask kids [
+          create-parasite-with myself
+          ask my-in-links [
+            die
+          ]
+        ]
+      ]
+    ]
+  ]
+end
+
 
 to bass-restock
-   ask patch-at bass-restock-x bass-restock-y [
-      ;; sprout basses on the desired patch
-      sprout-basses bass-restock-amount [
-         ;; commands for new bass
-         ifelse random-float 1 < 0.5 [
-            set direction -1
-         ]
-         [
-            set direction 1
-         ]
+   ask patch bass-restock-x bass-restock-y [
+    ;; sprout basses on the desired patch
+    sprout-basses bass-restock-amount [
+      set color red
+      ;; set top-color and bottom-color
+      let top-tmp one-of top-colors
+      set top-color top-tmp
+
+      ;; find closest bottom patch
+      let target-bottom min-one-of (patches with [member? pcolor bottom-colors]) [distance myself]
+      set bottom-color [pcolor] of target-bottom
+      let bot-tmp [pcolor] of target-bottom
+
+      let target-patch one-of patches
+      ifelse random-float 1 < 0.5 [
+        set target-patch min-one-of (patches with [pcolor = bot-tmp]) [distance myself]
       ]
+      [
+        set target-patch min-one-of (patches with [pcolor = top-tmp]) [distance myself]
+      ]
+
+      let dir [pcolor] of target-patch
+      set direction dir
+      face one-of patches with [pcolor = dir]
+    ]
    ]
 end
 @#$#@#$#@
@@ -229,10 +260,10 @@ NIL
 1
 
 BUTTON
-75
-147
-160
-180
+110
+74
+195
+107
 NIL
 go-once
 NIL
@@ -246,10 +277,10 @@ NIL
 1
 
 BUTTON
-69
-272
-133
-306
+75
+117
+139
+151
 NIL
 go
 T
@@ -261,6 +292,86 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+1285
+24
+1485
+174
+bass population
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count basses"
+
+PLOT
+1285
+185
+1485
+335
+mussel population
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count mussels"
+
+INPUTBOX
+29
+197
+179
+257
+larvae-death-rate
+0.0
+1
+0
+Number
+
+INPUTBOX
+27
+268
+177
+328
+attach-rate
+0.0
+1
+0
+Number
+
+INPUTBOX
+28
+348
+178
+408
+initial-bass-pop
+100.0
+1
+0
+Number
+
+INPUTBOX
+30
+417
+180
+477
+initial-mussel-pop
+100.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
