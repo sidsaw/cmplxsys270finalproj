@@ -12,7 +12,7 @@ globals [attach-rate mussel-repr-age mussel-egg-count mussel-death-rate mussel-b
 to setup
   clear-all
   reset-ticks
-  import-pcolors "river1_dots.jpg"
+  import-pcolors "newriverbranch.jpg"
   set attach-rate -1
   set mussel-repr-age 5
   set mussel-death-rate 0.2
@@ -21,24 +21,34 @@ to setup
   set river-color 0
   set mussel-egg-count 50
   set tick-weeks 2
-  set top-colors [] ;; add colors of top
-  set bottom-colors [] ;; add colors of bottom
-
+  ;; squashed_spider_river set top-colors [114.6 32.1 101.7] ;; add colors of top
+  ;; squashed_spider_river set bottom-colors [14.2 125.4 64.9] ;; add colors of bottom
+  set top-colors [114.6]
+  set bottom-colors [14.2 125.4 64.9 25.9 84.9]
 
   create-mussels 100 [
-    move-to one-of patches with [ pcolor = 94.9 ]
+    move-to one-of patches with [ pcolor = 94.5 ]
     set age random-normal 35 17.5
     set color black
 
   ]
 
   create-basses 20 [
-    set direction -1
-    move-to one-of patches with [ pcolor = 94.9 ]
+    move-to one-of patches with [ pcolor = 94.5 ] ; basses start on water
     set color red
     ;; set top-color and bottom-color
-    set top-color one-of top-colors
-    set bottom-color one-of bottom-colors
+    let top-tmp one-of top-colors
+    set top-color top-tmp
+
+    ;; find closest bottom patch
+    let target-bottom min-one-of (patches with [member? pcolor bottom-colors]) [distance myself]
+    set bottom-color [pcolor] of target-bottom
+    let bot-tmp [pcolor] of target-bottom
+
+    let target-patch min-one-of (patches with [pcolor = bot-tmp or pcolor = top-tmp]) [distance myself]
+    let dir [pcolor] of target-patch
+    set direction dir
+    face one-of patches with [pcolor = dir]
   ]
 
 end
@@ -53,6 +63,10 @@ to go-once
      ;;bass-restock
   ]
   tick
+end
+
+to go
+  go-once
 end
 
 
@@ -104,18 +118,50 @@ end
 
 to bass-move
   ask basses [
-    let dist 3
     let bottom bottom-color
     let top top-color
-    if pcolor = top [
+    let dir direction
+
+    ;; check if at top or bottom of map, switch direction if so
+    if any? neighbors with [member? pcolor top-colors] or pcolor = top [
       face one-of patches with [pcolor = bottom]
+      set direction bottom
+      set dir direction
     ]
 
-    if pcolor = bottom [
+    if any? neighbors with [member? pcolor bottom-colors] or pcolor = bottom [
       face one-of patches with [pcolor = top]
+      set direction top
+      set dir direction
     ]
+
+    ;; move three
+    ;;let targ-patches patches with [pcolor = 94.5 and distance myself = 3]
+    ;;let targ-color-patch one-of patches with [pcolor = dir]
+    ;;let move-to-patch min-one-of targ-patches [distance targ-color-patch]
+    ;;move-to move-to-patch
 
     fd 3
+
+    ;; if ends up on green, find the nearest blue patch and move to that
+    if pcolor = 61.9 [
+      ifelse member? dir top-colors [
+        ;; if heading upwards
+        let target-patch min-one-of (patches with [member? pcolor top-colors]) [distance myself]
+        set top-color [pcolor] of target-patch
+        set direction [pcolor] of target-patch
+        face target-patch
+      ]
+      [
+        ;; if heading downwards
+        let target-patch min-one-of (patches with [member? pcolor bottom-colors]) [distance myself]
+        set bottom-color [pcolor] of target-patch
+        set direction [pcolor] of target-patch
+        face target-patch
+      ]
+      move-to min-one-of patches with [pcolor = 94.5] [distance myself]
+    ]
+
     ask out-link-neighbors [
       setxy ([xcor] of myself) ([ycor] of myself)
     ]
@@ -152,8 +198,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 -39
 39
@@ -167,9 +213,9 @@ ticks
 
 BUTTON
 38
-72
+73
 104
-105
+106
 NIL
 setup
 NIL
@@ -190,6 +236,23 @@ BUTTON
 NIL
 go-once
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+69
+272
+133
+306
+NIL
+go
+T
 1
 T
 OBSERVER
