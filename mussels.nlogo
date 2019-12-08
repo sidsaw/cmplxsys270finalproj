@@ -16,7 +16,7 @@ to setup
   set mussel-death-rate 0.2
   set mussel-birth-rate 0.61
   set river-color 0
-  set mussel-egg-count 50
+  set mussel-egg-count 15
   set tick-weeks 2
   ;; squashed_spider_river set top-colors [114.6 32.1 101.7] ;; add colors of top
   ;; squashed_spider_river set bottom-colors [14.2 125.4 64.9] ;; add colors of bottom
@@ -60,7 +60,7 @@ end
 
 to go-once
   tick
-  mussel-larvae-death
+  ;;mussel-larvae-death
   mussel-birth
   larvae-detach
   bass-move
@@ -79,9 +79,12 @@ end
 
 to mussel-birth
   ;; mussels only give birth once a year, so ticks mod 26 == 0 is necessary
-  ;;if ticks mod (52 / tick-weeks) = 0 [
+  if ticks mod (52 / tick-weeks) = 0 [
     ask mussels [
       set age age + 1
+    ]
+  ]
+  ask mussels[
       ;; mussels must be of reproductive age to give birth
       if age >= mussel-repr-age [
         ;; mussel-birth-rate is the part of the population that reproduces each year
@@ -104,18 +107,19 @@ end
 ;; mussel-death
 to mussel-death
   ;; mussels have a chance of giving birth once a year, and also have a chance of dying once a year
-  ;;if ticks mod (52 / tick-weeks) = 0 [
+  if ticks mod (52 / tick-weeks) = 0 [
     set mussel-death-rate 0.2
-    ;; loop through all mussel ages
-    ask mussels [
-      if random-float 1 < mussel-death-rate
-      [ die ]
-    ]
-  ;;]
+
+    let candidate-parasites sort-on [(- age)] mussels
+    let parasite-deaths ceiling ( mussel-death-rate * length candidate-parasites )
+    set candidate-parasites sublist candidate-parasites 0 parasite-deaths
+
+    foreach candidate-parasites [ x -> ask x [die] ]
+  ]
 end
 
 to mussel-larvae-death
-  ask mussels with [age < 5] [
+  ask mussels with [age = 0] [
     if not any? out-parasite-neighbors [
       die
     ]
