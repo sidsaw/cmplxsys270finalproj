@@ -3,7 +3,6 @@ breed [basses bass]
 basses-own [direction top-color bottom-color]
 mussels-own [ age ]
 
-
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
@@ -61,14 +60,16 @@ end
 
 to go-once
   tick
+  mussel-larvae-death
   mussel-birth
-  mussel-death
   larvae-detach
   bass-move
   mussel-bass-collide
+  mussel-death
   if ticks = 520 [
      bass-restock
   ]
+
 end
 
 to go
@@ -78,7 +79,7 @@ end
 
 to mussel-birth
   ;; mussels only give birth once a year, so ticks mod 26 == 0 is necessary
-  if ticks mod (52 / tick-weeks) = 0 [
+  ;;if ticks mod (52 / tick-weeks) = 0 [
     ask mussels [
       set age age + 1
       ;; mussels must be of reproductive age to give birth
@@ -88,23 +89,35 @@ to mussel-birth
           ;; create mussel-egg-count # of mussels and link them to parent
           hatch-mussels mussel-egg-count [
             create-offspring-from myself
+            ;;ask my-in-links [
+              ;;die
+            ;;]
+            set age 0
+          set color green
           ]
         ]
       ]
     ]
-  ]
+  ;;]
 end
 
 ;; mussel-death
 to mussel-death
   ;; mussels have a chance of giving birth once a year, and also have a chance of dying once a year
-  if ticks mod (52 / tick-weeks) = 0 [
+  ;;if ticks mod (52 / tick-weeks) = 0 [
     set mussel-death-rate 0.2
     ;; loop through all mussel ages
     ask mussels [
-      let rnum random-float 1
-      if rnum < mussel-death-rate
+      if random-float 1 < mussel-death-rate
       [ die ]
+    ]
+  ;;]
+end
+
+to mussel-larvae-death
+  ask mussels with [age < 5] [
+    if not any? out-parasite-neighbors [
+      die
     ]
   ]
 end
@@ -112,8 +125,10 @@ end
 to larvae-detach
   ask basses [
     ask out-parasite-neighbors [
-      if random-float 1.0 <= 0.3 [
-        ask my-in-parasites [ die ]
+      if random-float 1.0 <= 0.4 [
+        move-to myself
+        ask my-links [ die ]
+
       ]
     ]
   ]
@@ -163,9 +178,7 @@ to bass-move
       move-to min-one-of patches with [pcolor = 94.5] [distance myself]
     ]
 
-    ask out-link-neighbors [
-      setxy ([xcor] of myself) ([ycor] of myself)
-    ]
+
   ]
 end
 
@@ -176,7 +189,7 @@ to mussel-bass-collide
       ask basses in-radius 3 [
         ask kids [
           create-parasite-with myself
-          ask my-in-links [
+          ask my-in-offsprings [
             die
           ]
         ]
@@ -236,8 +249,8 @@ GRAPHICS-WINDOW
 39
 -39
 39
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -357,7 +370,7 @@ INPUTBOX
 178
 408
 initial-bass-pop
-100.0
+10.0
 1
 0
 Number
@@ -368,7 +381,7 @@ INPUTBOX
 180
 477
 initial-mussel-pop
-100.0
+30.0
 1
 0
 Number
