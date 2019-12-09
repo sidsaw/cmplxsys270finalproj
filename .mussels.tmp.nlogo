@@ -117,7 +117,7 @@ to mussel-death
 end
 
 to mussel-larvae-death
-  ask mussels with [age = 0 and any? my-in-offsprings] [
+  ask mussels with [age = 0 and amy-in-offsprings] [
     if not any? out-parasite-neighbors [
       die
     ]
