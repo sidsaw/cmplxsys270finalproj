@@ -419,7 +419,7 @@ INPUTBOX
 197
 577
 bass-restock-x
--21.0
+-12.0
 1
 0
 Number
@@ -430,7 +430,7 @@ INPUTBOX
 209
 665
 bass-restock-y
-6.0
+5.0
 1
 0
 Number
@@ -439,7 +439,7 @@ SWITCH
 42
 744
 146
-778
+777
 restock
 restock
 0
@@ -802,13 +802,13 @@ NetLogo 6.1.0
       <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="bass-restock-x">
-      <value value="-21"/>
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="initial-bass-pop">
       <value value="6"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="bass-restock-y">
-      <value value="6"/>
+      <value value="14"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="initial-mussel-pop">
       <value value="20"/>
