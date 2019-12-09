@@ -796,7 +796,7 @@ NetLogo 6.1.0
   <experiment name="experiment" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
-    <exitCondition>tick = 424</exitCondition>
+    <timeLimit steps="424"/>
     <metric>avg-mussel-population</metric>
     <enumeratedValueSet variable="larvae-death-rate">
       <value value="0"/>
