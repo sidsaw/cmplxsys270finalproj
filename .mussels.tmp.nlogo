@@ -793,9 +793,10 @@ NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="5" runMetricsEveryStep="false">
+  <experiment name="experiment" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
+    <exitCondition>tick = 424</exitCondition>
     <metric>avg-mussel-population</metric>
     <enumeratedValueSet variable="larvae-death-rate">
       <value value="0"/>
@@ -804,7 +805,7 @@ NetLogo 6.1.0
       <value value="-21"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="initial-bass-pop">
-      <value value="1"/>
+      <value value="6"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="bass-restock-y">
       <value value="6"/>
