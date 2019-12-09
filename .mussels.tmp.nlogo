@@ -6,7 +6,7 @@ mussels-own [ age birthday ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-amount top-colors bottom-colors]
+globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-amount top-colors bottom-colors avg-mussel-population pop-count]
 
 to setup
   clear-all
@@ -18,6 +18,8 @@ to setup
   set river-color 0
   set mussel-egg-count 10
   set tick-weeks 2
+  set avg-mussel-population 0
+  set pop-count 0
   ;; squashed_spider_river set top-colors [114.6 32.1 101.7] ;; add colors of top
   ;; squashed_spider_river set bottom-colors [14.2 125.4 64.9] ;; add colors of bottom
   set top-colors [114.6]
@@ -58,7 +60,6 @@ to setup
 
     let dir [pcolor] of target-patch
     set direction dir
-
     face one-of patches with [pcolor = dir]
   ]
 
@@ -80,7 +81,16 @@ to go-once
   if ticks = 520 [
      bass-restock
   ]
-
+  ;; we run for 16 years
+  ;; we measure per week after
+  if ticks / 26.5 > 13 [
+     set avg-mussel-population (avg-mussel-population + count mussels)
+    set pop-count pop-count + 1
+  ]
+  if ticks = 424 [
+    set avg-mussel-population (avg-mussel-population / pop-count)
+    stop
+  ]
 end
 
 to go
@@ -782,6 +792,34 @@ NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="5" runMetricsEveryStep="false">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>avg-mussel-population</metric>
+    <enumeratedValueSet variable="larvae-death-rate">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="bass-restock-x">
+      <value value="-21"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-bass-pop">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="bass-restock-y">
+      <value value="6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="initial-mussel-pop">
+      <value value="20"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="restock">
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="attach-rate">
+      <value value="0"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
