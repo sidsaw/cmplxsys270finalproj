@@ -1,22 +1,22 @@
 breed [mussels mussel]
 breed [basses bass]
 basses-own [direction top-color bottom-color]
-mussels-own [ age ]
+mussels-own [ age birthday ]
 
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-x bass-restock-y bass-restock-amount top-colors bottom-colors]
+globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-amount top-colors bottom-colors]
 
 to setup
   clear-all
   reset-ticks
   import-pcolors "newriverbranch.jpg"
   set mussel-repr-age 5
-  set mussel-death-rate 0.1
-  set mussel-birth-rate 0.61
+  set mussel-death-rate 0.4
+  set mussel-birth-rate 0.4
   set river-color 0
-  set mussel-egg-count 15
+  set mussel-egg-count 10
   set tick-weeks 2
   ;; squashed_spider_river set top-colors [114.6 32.1 101.7] ;; add colors of top
   ;; squashed_spider_river set bottom-colors [14.2 125.4 64.9] ;; add colors of bottom
@@ -26,8 +26,14 @@ to setup
   create-mussels initial-mussel-pop [
     move-to one-of patches with [ pcolor = 94.5 ]
     set age random-normal 35 17.5
+    set birthday random 52 / tick-weeks
     set color black
 
+  ]
+
+  if restock [
+    set bass-restock-amount initial-bass-pop
+    set initial-bass-pop 0
   ]
 
   create-basses initial-bass-pop [
@@ -55,6 +61,10 @@ to setup
     face one-of patches with [pcolor = dir]
   ]
 
+  if restock [
+    bass-restock
+  ]
+
 end
 
 
@@ -79,8 +89,8 @@ end
 
 to mussel-birth
   ;; mussels only give birth once a year, so ticks mod 26 == 0 is necessary
-  if ticks mod (52 / tick-weeks) = 0 [
-    ask mussels [
+  ask mussels [
+    if ticks mod (52 / tick-weeks) = birthday [
       set age age + 1
     ]
   ]
@@ -112,7 +122,7 @@ to mussel-death
 
     ;;let candidate-mussels sort-on [(- age)] mussels
 
-    let mussels-deaths ceiling ( mussel-death-rate *  mussels )
+    let mussels-deaths ceiling ( mussel-death-rate * count mussels )
     ask n-of mussels-deaths mussels [die]
     ;;set candidate-mussels sublist candidate-mussels 0 mussels-deaths
     ;;foreach candidate-mussels [ x -> ask x [die] ]
@@ -374,7 +384,7 @@ INPUTBOX
 178
 408
 initial-bass-pop
-10.0
+0.0
 1
 0
 Number
@@ -385,10 +395,43 @@ INPUTBOX
 180
 477
 initial-mussel-pop
-30.0
+20.0
 1
 0
 Number
+
+INPUTBOX
+47
+517
+197
+577
+bass-restock-x
+-21.0
+1
+0
+Number
+
+INPUTBOX
+59
+605
+209
+665
+bass-restock-y
+6.0
+1
+0
+Number
+
+SWITCH
+42
+744
+146
+778
+restock
+restock
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
