@@ -13,7 +13,7 @@ to setup
   reset-ticks
   import-pcolors "newriverbranch.jpg"
   set mussel-repr-age 5
-  set mussel-death-rate 0.2
+  set mussel-death-rate 0.1
   set mussel-birth-rate 0.61
   set river-color 0
   set mussel-egg-count 15
@@ -91,10 +91,11 @@ to mussel-birth
         if random-float 1.0 <= mussel-birth-rate [
           ;; create mussel-egg-count # of mussels and link them to parent
           hatch-mussels mussel-egg-count [
-            create-offspring-from myself
+
             ;;ask my-in-links [
               ;;die
             ;;]
+            create-offspring-from myself
             set age 0
           set color green
           ]
@@ -109,10 +110,12 @@ to mussel-death
   ;; mussels have a chance of giving birth once a year, and also have a chance of dying once a year
   if ticks mod (52 / tick-weeks) = 0 [
 
-    let candidate-mussels sort-on [(- age)] mussels
-    let mussels-deaths ceiling ( mussel-death-rate * length candidate-mussels )
-    set candidate-mussels sublist candidate-mussels 0 mussels-deaths
-    foreach candidate-mussels [ x -> ask x [die] ]
+    ;;let candidate-mussels sort-on [(- age)] mussels
+
+    let mussels-deaths ceiling ( mussel-death-rate * count mussels )
+    ask n-of mussels-deaths mussels [die]
+    ;;set candidate-mussels sublist candidate-mussels 0 mussels-deaths
+    ;;foreach candidate-mussels [ x -> ask x [die] ]
   ]
 end
 
@@ -382,7 +385,7 @@ INPUTBOX
 180
 477
 initial-mussel-pop
-30.0
+20.0
 1
 0
 Number
