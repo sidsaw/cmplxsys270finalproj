@@ -32,8 +32,8 @@ to setup
   ]
 
   if restock [
-    set bass-restock-amount initial-bass-pop
-    set initial-bass-pop 0
+    set bass-restock-amount initial-bass-pop - 1
+    set initial-bass-pop 1
   ]
 
   create-basses initial-bass-pop [
@@ -58,6 +58,7 @@ to setup
 
     let dir [pcolor] of target-patch
     set direction dir
+
     face one-of patches with [pcolor = dir]
   ]
 
@@ -157,6 +158,7 @@ to bass-move
     ;; check if at top or bottom of map, switch direction if so
     if any? neighbors with [member? pcolor top-colors] or pcolor = top [
       let target-patch one-of (patches with [member? pcolor bottom-colors])
+
       set bottom-color [pcolor] of target-patch
       set direction [pcolor] of target-patch
       face target-patch
@@ -164,6 +166,7 @@ to bass-move
 
     if any? neighbors with [member? pcolor bottom-colors] or pcolor = bottom [
       let target-patch one-of (patches with [member? pcolor top-colors])
+
       set top-color [pcolor] of target-patch
       set direction [pcolor] of target-patch
       face target-patch
@@ -384,7 +387,7 @@ INPUTBOX
 178
 408
 initial-bass-pop
-0.0
+1.0
 1
 0
 Number
