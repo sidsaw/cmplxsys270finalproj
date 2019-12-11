@@ -6,12 +6,12 @@ mussels-own [ age birthday ]
 directed-link-breed [offsprings offspring]
 undirected-link-breed [parasites parasite]
 
-globals [mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-amount top-colors bottom-colors avg-mussel-population pop-count]
+globals [blue-color mussel-repr-age mussel-egg-count mussel-death-rate mussel-birth-rate river-color tick-weeks mussel-detach-age bass-restock-amount top-colors bottom-colors avg-mussel-population pop-count]
 
 to setup
   clear-all
   reset-ticks
-  import-pcolors "newriverbranch.jpg"
+  import-pcolors "river1withstrips.jpg"
   set mussel-repr-age 5
   set mussel-death-rate 0.4
   set mussel-birth-rate 0.4
@@ -22,11 +22,14 @@ to setup
   set pop-count 0
   ;; squashed_spider_river set top-colors [114.6 32.1 101.7] ;; add colors of top
   ;; squashed_spider_river set bottom-colors [14.2 125.4 64.9] ;; add colors of bottom
-  set top-colors [114.6]
-  set bottom-colors [14.2 125.4 64.9 25.9 84.9]
+  ;; newriverbranch set top-colors [114.6]
+  ;; newriverbranch set bottom-colors [14.2 125.4 64.9 25.9 84.9]
+  set top-colors [13.6]
+  set bottom-colors [44.4]
+  set blue-color 94.9
 
   create-mussels initial-mussel-pop [
-    move-to one-of patches with [ pcolor = 94.5 ]
+    move-to one-of patches with [ pcolor = blue-color ]
     set age random-normal 35 17.5
     set birthday random 52 / tick-weeks
     set color black
@@ -39,7 +42,7 @@ to setup
   ]
 
   create-basses initial-bass-pop [
-    move-to one-of patches with [ pcolor = 94.5 ] ; basses start on water
+    move-to one-of patches with [ pcolor = blue-color ] ; basses start on water
     set color red
     ;; set top-color and bottom-color
     let top-tmp one-of top-colors
@@ -202,7 +205,7 @@ to bass-move
         set direction [pcolor] of target-patch
         face target-patch
       ]
-      move-to min-one-of patches with [pcolor = 94.5] [distance myself]
+      move-to min-one-of patches with [pcolor = blue-color] [distance myself]
     ]
 
 
@@ -439,7 +442,7 @@ SWITCH
 42
 744
 146
-778
+777
 restock
 restock
 0
